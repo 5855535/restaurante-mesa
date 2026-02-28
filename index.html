@@ -64,6 +64,9 @@
             <h2 class="text-monster-hero text-4xl sm:text-7xl font-black mb-4 italic tracking-tighter uppercase">
                 CALMA TU <span class="text-yellow-500">HAMBRE</span> <br class="sm:hidden"> DE <span class="text-red-600">BESTIA</span>
             </h2>
+            <p class="text-sm sm:text-xl text-gray-400 max-w-xl mx-auto mb-8">
+                Ingredientes seleccionados por <strong>White</strong> y <strong>Julius</strong>.
+            </p>
         </div>
     </div>
 
@@ -125,10 +128,29 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        const telefonoWhatsApp = "573046034192";
+        const telefonoWhatsApp = "573001234567";
+        let ubicacionUsuario = "No compartida"; // Variable para la ubicación
 
         let productos = [];
         let carrito = [];
+
+        // FUNCIÓN PARA OBTENER EL GPS
+        function obtenerUbicacion() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const lat = pos.coords.latitude;
+                        const lon = pos.coords.longitude;
+                        ubicacionUsuario = `https://www.google.com/maps?q=${lat},${lon}`;
+                        console.log("Ubicación obtenida");
+                    },
+                    (err) => {
+                        console.warn("Ubicación denegada");
+                        ubicacionUsuario = "El cliente denegó el acceso a la ubicación.";
+                    }
+                );
+            }
+        }
 
         function renderMenu(categoria = 'all') {
             const grid = document.getElementById('menu-grid');
@@ -214,7 +236,10 @@
             const modal = document.getElementById('cart-modal');
             modal.classList.toggle('hidden');
             document.body.style.overflow = modal.classList.contains('hidden') ? 'auto' : 'hidden';
-            if (!modal.classList.contains('hidden')) renderCarrito();
+            if (!modal.classList.contains('hidden')) {
+                renderCarrito();
+                obtenerUbicacion(); // PEDIR UBICACIÓN AL ABRIR CARRITO
+            }
         }
 
         function enviarOrdenWhatsApp() {
@@ -222,6 +247,8 @@
             let msg = `👹 *PEDIDO MONSTER BURGER*\n\n`;
             carrito.forEach(i => msg += `✅ *${i.cantidad}x* ${i.nombre}\n`);
             msg += `\n💰 *TOTAL: ${document.getElementById('cart-total').innerText}*`;
+            msg += `\n\n📍 *UBICACIÓN:* ${ubicacionUsuario}`; // AGREGAR AL MENSAJE
+            
             window.open(`https://wa.me/${telefonoWhatsApp}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
@@ -233,7 +260,6 @@
             setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 500); }, 1500);
         }
 
-        // --- NUEVA FUNCIÓN PARA EL LOGO E ICONO ---
         async function cargarConfiguracionVisual() {
             try {
                 const doc = await db.collection('configuracion').doc('apariencia').get();
@@ -265,10 +291,9 @@
         }
 
         window.onload = () => {
-            cargarConfiguracionVisual(); // Carga logo e icono
-            cargarProductosDesdeFirebase(); // Carga la comida
+            cargarConfiguracionVisual();
+            cargarProductosDesdeFirebase();
         };
     </script>
 </body>
-
 </html>
