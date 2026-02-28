@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Monster Burger | Domicilios</title>
+    
+    <link id="dynamic-favicon" rel="icon" type="image/jpeg" href="logo.jpg">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: #0f0f0f; 
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .card-monster {
+            background: #1a1a1a;
+            border: 1px solid #262626;
+            transition: transform 0.2s;
+        }
+        html, body { overflow-x: hidden; }
+        .tab-active { background-color: #f9d423; color: black; }
+        .tab-inactive { background-color: #1a1a1a; color: #a1a1aa; border: 1px solid #262626; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @media (max-width: 640px) {
+            .text-monster-hero { font-size: 2.5rem !important; line-height: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="bg-black/95 shadow-xl sticky top-0 z-50 border-b border-yellow-500/20 backdrop-blur-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <img id="dynamic-logo" src="logo.jpg" alt="Logo" class="w-10 h-10 rounded-full border border-yellow-500 object-cover">
+                <h1 class="text-lg sm:text-2xl font-black italic tracking-tighter">
+                    MONSTER<span class="text-red-600">BURGER</span>
+                </h1>
+            </div>
+            <button onclick="toggleCart()" class="flex items-center gap-2 bg-yellow-500 active:scale-95 text-black px-4 py-2 rounded-full font-bold transition-all relative">
+                <i class="fas fa-shopping-basket text-lg"></i>
+                <span class="hidden xs:inline text-sm">MI ORDEN</span>
+                <span id="cart-count" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-black font-bold">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="relative py-12 sm:py-20 overflow-hidden bg-black flex items-center justify-center border-b border-white/5">
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute top-0 left-0 w-48 h-48 bg-red-600 rounded-full filter blur-[80px]"></div>
+            <div class="absolute bottom-0 right-0 w-48 h-48 bg-yellow-500 rounded-full filter blur-[80px]"></div>
+        </div>
+        <div class="relative max-w-7xl mx-auto px-6 text-center">
+            <h2 class="text-monster-hero text-4xl sm:text-7xl font-black mb-4 italic tracking-tighter uppercase">
+                CALMA TU <span class="text-yellow-500">HAMBRE</span> <br class="sm:hidden"> DE <span class="text-red-600">BESTIA</span>
+            </h2>
+            <p class="text-sm sm:text-xl text-gray-400 max-w-xl mx-auto mb-8">
+                Ingredientes seleccionados por <strong>White</strong> y <strong>Julius</strong>.
+            </p>
+        </div>
+    </div>
+
+    <div class="sticky top-[60px] z-40 bg-[#0f0f0f] border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-4 py-4 overflow-x-auto hide-scrollbar">
+            <div class="flex gap-3 whitespace-nowrap" id="tabs-container">
+                <button onclick="filtrarCategoria('all')" class="tab-active px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Todo</button>
+                <button onclick="filtrarCategoria('hamburguesas')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Hamburguesas</button>
+                <button onclick="filtrarCategoria('perros')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Perros Calientes</button>
+                <button onclick="filtrarCategoria('salchipapas')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Salchipapas</button>
+                <button onclick="filtrarCategoria('especiales')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Especiales</button>
+                <button onclick="filtrarCategoria('sandwich')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Sándwich</button>
+                <button onclick="filtrarCategoria('pollo')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Pollo Broaster</button>
+                <button onclick="filtrarCategoria('patacon')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Patacón</button>
+                <button onclick="filtrarCategoria('adiciones')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Adiciones</button>
+                <button onclick="filtrarCategoria('entradas')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Entradas</button>
+                <button onclick="filtrarCategoria('bebidas')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Bebidas</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="menu-section" class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="menu-grid"></div>
+    </div>
+
+    <div id="cart-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-end sm:items-center justify-center">
+        <div class="bg-zinc-900 w-full sm:max-w-lg h-[90vh] sm:h-auto sm:rounded-3xl overflow-hidden flex flex-col border-t sm:border border-gray-800 shadow-2xl">
+            <div class="bg-red-600 text-white px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-ghost text-xl"></i>
+                    <h3 class="text-xl font-black italic uppercase">Tu Lista de Caza</h3>
+                </div>
+                <button onclick="toggleCart()" class="text-3xl p-2">&times;</button>
+            </div>
+            <div id="cart-items" class="flex-1 p-6 overflow-y-auto space-y-4"></div>
+            <div class="p-6 border-t border-gray-800 bg-black/60">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-gray-400 font-bold uppercase text-xs tracking-widest">Total</span>
+                    <span id="cart-total" class="font-black text-3xl text-yellow-500">$0</span>
+                </div>
+                <button onclick="enviarOrdenWhatsApp()" class="w-full bg-green-500 active:scale-95 text-black py-4 rounded-2xl text-lg font-black flex items-center justify-center gap-3 shadow-lg">
+                    <i class="fab fa-whatsapp text-2xl"></i> PEDIR POR WHATSAPP
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBOlbYHJdAb1tcEHW-_vT2b8-CnZdYTdtI",
+            authDomain: "monster-burger-aac9b.firebaseapp.com",
+            projectId: "monster-burger-aac9b",
+            storageBucket: "monster-burger-aac9b.firebasestorage.app",
+            messagingSenderId: "766220466657",
+            appId: "1:766220466657:web:c8c60c05b2ab40cc11faa0",
+            measurementId: "G-X62MK80WG1"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const telefonoWhatsApp = "573001234567";
+
+        let productos = [];
+        let carrito = [];
+
+        function renderMenu(categoria = 'all') {
+            const grid = document.getElementById('menu-grid');
+            const filtrados = categoria === 'all' ? productos : productos.filter(p => p.categoria === categoria);
+            
+            grid.innerHTML = filtrados.map(p => `
+                <div class="card-monster rounded-2xl overflow-hidden shadow-lg">
+                    <img src="${p.img}" class="w-full h-48 object-cover" onerror="this.src='logo.jpg'">
+                    <div class="p-5">
+                        <h3 class="font-black text-lg uppercase italic text-yellow-500 mb-1">${p.nombre}</h3>
+                        <p class="text-gray-400 text-xs mb-4 line-clamp-2">${p.desc}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xl font-black text-white">$${p.precio.toLocaleString()}</span>
+                            <button onclick="agregarAlCarrito('${p.id}')" class="bg-white text-black active:bg-yellow-500 px-4 py-2 rounded-xl font-bold text-xs uppercase">Agregar</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            if(filtrados.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center py-10 text-gray-500 italic">Próximamente más platos aquí...</p>';
+            }
+        }
+
+        function filtrarCategoria(cat) {
+            const botones = document.querySelectorAll('#tabs-container button');
+            botones.forEach(btn => {
+                btn.className = btn.getAttribute('onclick').includes(`'${cat}'`) ? 
+                    "tab-active px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase transition-all" : 
+                    "tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase transition-all";
+            });
+            renderMenu(cat);
+        }
+
+        function agregarAlCarrito(id) {
+            const prod = productos.find(p => p.id === id);
+            if (!prod) return;
+            const item = carrito.find(i => i.id === id);
+            item ? item.cantidad++ : carrito.push({ ...prod, cantidad: 1 });
+            actualizarUI();
+            mostrarNotificacion(`¡${prod.nombre} añadida!`);
+        }
+
+        function actualizarUI() {
+            document.getElementById('cart-count').textContent = carrito.reduce((s, i) => s + i.cantidad, 0);
+            renderCarrito();
+        }
+
+        function renderCarrito() {
+            const container = document.getElementById('cart-items');
+            if (carrito.length === 0) {
+                container.innerHTML = `<div class="text-center py-10"><p class="text-gray-500">Carrito vacío</p></div>`;
+                document.getElementById('cart-total').textContent = '$0';
+                return;
+            }
+            let total = 0;
+            container.innerHTML = carrito.map((item, index) => {
+                total += item.precio * item.cantidad;
+                return `
+                    <div class="flex items-center gap-4 bg-white/5 p-3 rounded-2xl border border-white/5">
+                        <img src="${item.img}" class="w-16 h-16 object-cover rounded-xl" onerror="this.src='logo.jpg'">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-sm uppercase">${item.nombre}</h4>
+                            <p class="text-yellow-500 font-bold">$${item.precio.toLocaleString()}</p>
+                            <div class="flex items-center gap-4 mt-2">
+                                <button onclick="cambiarCantidad(${index}, -1)" class="text-red-500"><i class="fas fa-minus-circle"></i></button>
+                                <span class="font-bold">${item.cantidad}</span>
+                                <button onclick="cambiarCantidad(${index}, 1)" class="text-green-500"><i class="fas fa-plus-circle"></i></button>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+            document.getElementById('cart-total').textContent = `$${total.toLocaleString()}`;
+        }
+
+        function cambiarCantidad(i, c) {
+            carrito[i].cantidad += c;
+            if (carrito[i].cantidad < 1) carrito.splice(i, 1);
+            actualizarUI();
+        }
+
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            modal.classList.toggle('hidden');
+            document.body.style.overflow = modal.classList.contains('hidden') ? 'auto' : 'hidden';
+            if (!modal.classList.contains('hidden')) renderCarrito();
+        }
+
+        function enviarOrdenWhatsApp() {
+            if (carrito.length === 0) return;
+            let msg = `👹 *PEDIDO MONSTER BURGER*\n\n`;
+            carrito.forEach(i => msg += `✅ *${i.cantidad}x* ${i.nombre}\n`);
+            msg += `\n💰 *TOTAL: ${document.getElementById('cart-total').innerText}*`;
+            window.open(`https://wa.me/${telefonoWhatsApp}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function mostrarNotificacion(t) {
+            const n = document.createElement('div');
+            n.className = 'fixed top-4 left-1/2 -translate-x-1/2 bg-yellow-500 text-black px-6 py-2 rounded-full font-black z-[300] shadow-2xl text-xs uppercase italic';
+            n.innerHTML = t;
+            document.body.appendChild(n);
+            setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 500); }, 1500);
+        }
+
+        // --- NUEVA FUNCIÓN PARA EL LOGO E ICONO ---
+        async function cargarConfiguracionVisual() {
+            try {
+                const doc = await db.collection('configuracion').doc('apariencia').get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.logoUrl) document.getElementById('dynamic-logo').src = data.logoUrl;
+                    if (data.faviconUrl) document.getElementById('dynamic-favicon').href = data.faviconUrl;
+                }
+            } catch (error) {
+                console.error("Error cargando configuración visual:", error);
+            }
+        }
+
+        async function cargarProductosDesdeFirebase() {
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = '<p class="col-span-full text-center py-10 text-yellow-500 animate-pulse font-black italic">CAZANDO COMIDA EN LA NUBE...</p>';
+            try {
+                const snapshot = await db.collection('productos').get();
+                const productosFirebase = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (productosFirebase.length > 0) {
+                    productos = productosFirebase;
+                }
+                renderMenu('all');
+            } catch (error) {
+                console.error("Error al traer productos:", error);
+                grid.innerHTML = '<p class="col-span-full text-center py-10 text-red-600 font-bold">ERROR DE CONEXIÓN.</p>';
+                renderMenu('all');
+            }
+        }
+
+        window.onload = () => {
+            cargarConfiguracionVisual(); // Carga logo e icono
+            cargarProductosDesdeFirebase(); // Carga la comida
+        };
+    </script>
+</body>
+</html>
