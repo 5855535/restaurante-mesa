@@ -4,20 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Monster Burger | Domicilios</title>
-    
+   
     <link id="dynamic-favicon" rel="icon" type="image/jpeg" href="logo.jpg">
+    
+    <!-- PWA - Manifest y configuraciones básicas -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f9d423">
+    <meta name="apple-mobile-web-app-capable" content="yes">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    
+   
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background-color: #0f0f0f; 
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f0f0f;
             color: white;
             -webkit-tap-highlight-color: transparent;
         }
@@ -31,14 +36,12 @@
         .tab-inactive { background-color: #1a1a1a; color: #a1a1aa; border: 1px solid #262626; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
         @media (max-width: 640px) {
             .text-monster-hero { font-size: 2.5rem !important; line-height: 1; }
         }
     </style>
 </head>
 <body>
-
     <nav class="bg-black/95 shadow-xl sticky top-0 z-50 border-b border-yellow-500/20 backdrop-blur-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -54,7 +57,6 @@
             </button>
         </div>
     </nav>
-
     <div class="relative py-12 sm:py-20 overflow-hidden bg-black flex items-center justify-center border-b border-white/5">
         <div class="absolute inset-0 opacity-20">
             <div class="absolute top-0 left-0 w-48 h-48 bg-red-600 rounded-full filter blur-[80px]"></div>
@@ -66,7 +68,6 @@
             </h2>
         </div>
     </div>
-
     <div class="sticky top-[60px] z-40 bg-[#0f0f0f] border-b border-white/5">
         <div class="max-w-7xl mx-auto px-4 py-4 overflow-x-auto hide-scrollbar">
             <div class="flex gap-3 whitespace-nowrap" id="tabs-container">
@@ -84,11 +85,9 @@
             </div>
         </div>
     </div>
-
     <div id="menu-section" class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="menu-grid"></div>
     </div>
-
     <div id="cart-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-end sm:items-center justify-center">
         <div class="bg-zinc-900 w-full sm:max-w-lg h-[90vh] sm:h-auto sm:rounded-3xl overflow-hidden flex flex-col border-t sm:border border-gray-800 shadow-2xl">
             <div class="bg-red-600 text-white px-6 py-4 flex items-center justify-between">
@@ -121,13 +120,10 @@
             appId: "1:766220466657:web:c8c60c05b2ab40cc11faa0",
             measurementId: "G-X62MK80WG1"
         };
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-
         const telefonoWhatsApp = "573203707804";
-        let ubicacionUsuario = "No compartida"; // Variable para la ubicación
-
+        let ubicacionUsuario = "No compartida";
         let productos = [];
         let carrito = [];
 
@@ -152,7 +148,7 @@
         function renderMenu(categoria = 'all') {
             const grid = document.getElementById('menu-grid');
             const filtrados = categoria === 'all' ? productos : productos.filter(p => p.categoria === categoria);
-            
+           
             grid.innerHTML = filtrados.map(p => `
                 <div class="card-monster rounded-2xl overflow-hidden shadow-lg">
                     <img src="${p.img}" class="w-full h-48 object-cover" onerror="this.src='logo.jpg'">
@@ -166,7 +162,6 @@
                     </div>
                 </div>
             `).join('');
-
             if(filtrados.length === 0) {
                 grid.innerHTML = '<p class="col-span-full text-center py-10 text-gray-500 italic">Próximamente más platos aquí...</p>';
             }
@@ -175,8 +170,8 @@
         function filtrarCategoria(cat) {
             const botones = document.querySelectorAll('#tabs-container button');
             botones.forEach(btn => {
-                btn.className = btn.getAttribute('onclick').includes(`'${cat}'`) ? 
-                    "tab-active px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase transition-all" : 
+                btn.className = btn.getAttribute('onclick').includes(`'${cat}'`) ?
+                    "tab-active px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase transition-all" :
                     "tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase transition-all";
             });
             renderMenu(cat);
@@ -235,7 +230,7 @@
             document.body.style.overflow = modal.classList.contains('hidden') ? 'auto' : 'hidden';
             if (!modal.classList.contains('hidden')) {
                 renderCarrito();
-                obtenerUbicacion(); // PEDIR UBICACIÓN AL ABRIR CARRITO
+                obtenerUbicacion();
             }
         }
 
@@ -244,8 +239,8 @@
             let msg = `👹 *PEDIDO MONSTER BURGER*\n\n`;
             carrito.forEach(i => msg += `✅ *${i.cantidad}x* ${i.nombre}\n`);
             msg += `\n💰 *TOTAL: ${document.getElementById('cart-total').innerText}*`;
-            msg += `\n\n📍 *UBICACIÓN:* ${ubicacionUsuario}`; // AGREGAR AL MENSAJE
-            
+            msg += `\n\n📍 *UBICACIÓN:* ${ubicacionUsuario}`;
+           
             window.open(`https://wa.me/${telefonoWhatsApp}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
@@ -287,6 +282,15 @@
             }
         }
 
+        // Registro del Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('✅ Service Worker registrado correctamente'))
+                    .catch(err => console.log('❌ Error al registrar Service Worker:', err));
+            });
+        }
+
         window.onload = () => {
             cargarConfiguracionVisual();
             cargarProductosDesdeFirebase();
@@ -294,4 +298,3 @@
     </script>
 </body>
 </html>
-
