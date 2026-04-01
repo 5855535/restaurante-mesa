@@ -67,7 +67,6 @@
         </div>
     </nav>
 
-    <!-- Resto del contenido igual -->
     <div class="relative py-12 sm:py-20 overflow-hidden bg-black flex items-center justify-center border-b border-white/5">
         <div class="absolute inset-0 opacity-20">
             <div class="absolute top-0 left-0 w-48 h-48 bg-red-600 rounded-full filter blur-[80px]"></div>
@@ -102,7 +101,6 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="menu-grid"></div>
     </div>
 
-    <!-- Modal del carrito (sin el botón de instalar) -->
     <div id="cart-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-end sm:items-center justify-center">
         <div class="bg-zinc-900 w-full sm:max-w-lg h-[90vh] sm:h-auto sm:rounded-3xl overflow-hidden flex flex-col border-t sm:border border-gray-800 shadow-2xl">
             <div class="bg-red-600 text-white px-6 py-4 flex items-center justify-between">
@@ -118,7 +116,7 @@
                     <span class="text-gray-400 font-bold uppercase text-xs tracking-widest">Total</span>
                     <span id="cart-total" class="font-black text-3xl text-yellow-500">$0</span>
                 </div>
-                <button onclick="enviarOrdenWhatsApp()" class="w-full bg-green-500 active:scale-95 text-black py-4 rounded-2xl text-lg font-black flex items-center justify-center gap-3 shadow-lg mb-3">
+                <button onclick="enviarOrdenWhatsApp()" class="w-full bg-green-500 active:scale-95 text-black py-4 rounded-2xl text-lg font-black flex items-center justify-center gap-3 shadow-lg">
                     <i class="fab fa-whatsapp text-2xl"></i> PEDIR POR WHATSAPP
                 </button>
             </div>
@@ -141,42 +139,172 @@
         let ubicacionUsuario = "No compartida";
         let productos = [];
         let carrito = [];
-        let deferredPrompt = null;   // ← Variable importante para PWA
+        let deferredPrompt = null;
 
-        // ==================== FUNCIONES EXISTENTES ====================
-        function obtenerUbicacion() { ... }   // (mantengo igual)
+        // FUNCIÓN PARA OBTENER EL GPS
+        function obtenerUbicacion() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const lat = pos.coords.latitude;
+                        const lon = pos.coords.longitude;
+                        ubicacionUsuario = `https://www.google.com/maps?q=${lat},${lon}`;
+                        console.log("Ubicación obtenida");
+                    },
+                    (err) => {
+                        console.warn("Ubicación denegada");
+                        ubicacionUsuario = "El cliente denegó el acceso a la ubicación.";
+                    }
+                );
+            }
+        }
 
-        function renderMenu(categoria = 'all') { ... }   // igual
+        function renderMenu(categoria = 'all') {
+            const grid = document.getElementById('menu-grid');
+            const filtrados = categoria === 'all' ? productos : productos.filter(p => p.categoria === categoria);
+           
+            grid.innerHTML = filtrados.map(p => `
+                <div class="card-monster rounded-2xl overflow-hidden shadow-lg">
+                    <img src="${p.img}" class="w-full h-48 object-cover" onerror="this.src='logo.jpg'">
+                    <div class="p-5">
+                        <h3 class="font-black text-lg uppercase italic text-yellow-500 mb-1">${p.nombre}</h3>
+                        <p class="text-gray-400 text-xs mb-4 line-clamp-2">${p.desc}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xl font-black text-white">$${p.precio.toLocaleString()}</span>
+                            <button onclick="agregarAlCarrito('${p.id}')" class="bg-white text-black active:bg-yellow-500 px-4 py-2 rounded-xl font-bold text-xs uppercase">Agregar</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            if(filtrados.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center py-10 text-gray-500 italic">Próximamente más platos aquí...</p>';
+            }
+        }
 
-        function filtrarCategoria(cat) { ... }   // igual
+        function filtrarCategoria(cat) {
+            const botones = document.querySelectorAll('#tabs-container button');
+            botones.forEach(btn => {
+                btn.className = btn.getAttribute('onclick').includes(`'${cat}'`) ?
+                    "tab-active px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase transition-all" :
+                    "tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase transition-all";
+            });
+            renderMenu(cat);
+        }
 
-        function agregarAlCarrito(id) { ... }   // igual
+        function agregarAlCarrito(id) {
+            const prod = productos.find(p => p.id === id);
+            if (!prod) return;
+            const item = carrito.find(i => i.id === id);
+            item ? item.cantidad++ : carrito.push({ ...prod, cantidad: 1 });
+            actualizarUI();
+            mostrarNotificacion(`¡${prod.nombre} añadida!`);
+        }
 
-        function actualizarUI() { ... }   // igual
+        function actualizarUI() {
+            document.getElementById('cart-count').textContent = carrito.reduce((s, i) => s + i.cantidad, 0);
+            renderCarrito();
+        }
 
-        function renderCarrito() { ... }   // igual
+        function renderCarrito() {
+            const container = document.getElementById('cart-items');
+            if (carrito.length === 0) {
+                container.innerHTML = `<div class="text-center py-10"><p class="text-gray-500">Carrito vacío</p></div>`;
+                document.getElementById('cart-total').textContent = '$0';
+                return;
+            }
+            let total = 0;
+            container.innerHTML = carrito.map((item, index) => {
+                total += item.precio * item.cantidad;
+                return `
+                    <div class="flex items-center gap-4 bg-white/5 p-3 rounded-2xl border border-white/5">
+                        <img src="${item.img}" class="w-16 h-16 object-cover rounded-xl" onerror="this.src='logo.jpg'">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-sm uppercase">${item.nombre}</h4>
+                            <p class="text-yellow-500 font-bold">$${item.precio.toLocaleString()}</p>
+                            <div class="flex items-center gap-4 mt-2">
+                                <button onclick="cambiarCantidad(${index}, -1)" class="text-red-500"><i class="fas fa-minus-circle"></i></button>
+                                <span class="font-bold">${item.cantidad}</span>
+                                <button onclick="cambiarCantidad(${index}, 1)" class="text-green-500"><i class="fas fa-plus-circle"></i></button>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+            document.getElementById('cart-total').textContent = `$${total.toLocaleString()}`;
+        }
 
-        function cambiarCantidad(i, c) { ... }   // igual
+        function cambiarCantidad(i, c) {
+            carrito[i].cantidad += c;
+            if (carrito[i].cantidad < 1) carrito.splice(i, 1);
+            actualizarUI();
+        }
 
-        function toggleCart() { ... }   // igual
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            modal.classList.toggle('hidden');
+            document.body.style.overflow = modal.classList.contains('hidden') ? 'auto' : 'hidden';
+            if (!modal.classList.contains('hidden')) {
+                renderCarrito();
+                obtenerUbicacion();
+            }
+        }
 
-        function enviarOrdenWhatsApp() { ... }   // igual
+        function enviarOrdenWhatsApp() {
+            if (carrito.length === 0) return;
+            let msg = `👹 *PEDIDO MONSTER BURGER*\n\n`;
+            carrito.forEach(i => msg += `✅ *${i.cantidad}x* ${i.nombre}\n`);
+            msg += `\n💰 *TOTAL: ${document.getElementById('cart-total').innerText}*`;
+            msg += `\n\n📍 *UBICACIÓN:* ${ubicacionUsuario}`;
+           
+            window.open(`https://wa.me/${telefonoWhatsApp}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
 
-        function mostrarNotificacion(t) { ... }   // igual
+        function mostrarNotificacion(t) {
+            const n = document.createElement('div');
+            n.className = 'fixed top-4 left-1/2 -translate-x-1/2 bg-yellow-500 text-black px-6 py-2 rounded-full font-black z-[300] shadow-2xl text-xs uppercase italic';
+            n.innerHTML = t;
+            document.body.appendChild(n);
+            setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 500); }, 1500);
+        }
 
-        async function cargarConfiguracionVisual() { ... }   // igual
+        async function cargarConfiguracionVisual() {
+            try {
+                const doc = await db.collection('configuracion').doc('apariencia').get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.logoUrl) document.getElementById('dynamic-logo').src = data.logoUrl;
+                    if (data.faviconUrl) document.getElementById('dynamic-favicon').href = data.faviconUrl;
+                }
+            } catch (error) {
+                console.error("Error cargando configuración visual:", error);
+            }
+        }
 
-        async function cargarProductosDesdeFirebase() { ... }   // igual
+        async function cargarProductosDesdeFirebase() {
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = '<p class="col-span-full text-center py-10 text-yellow-500 animate-pulse font-black italic">CAZANDO COMIDA EN LA NUBE...</p>';
+            try {
+                const snapshot = await db.collection('productos').get();
+                const productosFirebase = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (productosFirebase.length > 0) {
+                    productos = productosFirebase;
+                }
+                renderMenu('all');
+            } catch (error) {
+                console.error("Error al traer productos:", error);
+                grid.innerHTML = '<p class="col-span-full text-center py-10 text-red-600 font-bold">ERROR DE CONEXIÓN.</p>';
+                renderMenu('all');
+            }
+        }
 
-        // ==================== NUEVO CÓDIGO PARA INSTALAR PWA ====================
-        // Detectar cuando se puede instalar la app
+        // ==================== PWA - INSTALACIÓN ====================
+        // Detectar cuando se puede instalar
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             document.getElementById('install-button').classList.remove('hidden');
         });
 
-        // Acción al hacer clic en el botón "Instalar App"
+        // Click en el botón Instalar App
         document.getElementById('install-button').addEventListener('click', async () => {
             if (!deferredPrompt) return;
 
@@ -194,7 +322,7 @@
             document.getElementById('install-button').classList.add('hidden');
         });
 
-        // Ocultar botón si la app ya fue instalada
+        // Ocultar botón cuando ya esté instalada
         window.addEventListener('appinstalled', () => {
             document.getElementById('install-button').classList.add('hidden');
         });
