@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Monster Burger | Domicilios</title>
-   
+  
+    <!-- PWA Config -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f9d423">
     <link id="dynamic-favicon" rel="icon" type="image/jpeg" href="logo.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-   
+  
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+   
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
         body {
@@ -35,6 +39,7 @@
     </style>
 </head>
 <body>
+    <!-- NAVBAR -->
     <nav class="bg-black/95 shadow-xl sticky top-0 z-50 border-b border-yellow-500/20 backdrop-blur-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -43,13 +48,22 @@
                     MONSTER<span class="text-red-600">BURGER</span>
                 </h1>
             </div>
-            <button onclick="toggleCart()" class="flex items-center gap-2 bg-yellow-500 active:scale-95 text-black px-4 py-2 rounded-full font-bold transition-all relative">
-                <i class="fas fa-shopping-basket text-lg"></i>
-                <span class="hidden xs:inline text-sm">MI ORDEN</span>
-                <span id="cart-count" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-black font-bold">0</span>
-            </button>
+           
+            <div class="flex items-center gap-3">
+                <button onclick="triggerInstall()"
+                        class="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-black px-5 py-3 rounded-2xl font-bold text-sm active:scale-95 transition-all shadow-lg">
+                    <i class="fas fa-download"></i>
+                    <span class="hidden sm:inline">Instalar App</span>
+                </button>
+                <button onclick="toggleCart()" class="flex items-center gap-2 bg-white text-black px-4 py-3 rounded-2xl font-bold transition-all relative">
+                    <i class="fas fa-shopping-basket text-lg"></i>
+                    <span class="hidden xs:inline text-sm">MI ORDEN</span>
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-black font-bold">0</span>
+                </button>
+            </div>
         </div>
     </nav>
+
     <div class="relative py-12 sm:py-20 overflow-hidden bg-black flex items-center justify-center border-b border-white/5">
         <div class="absolute inset-0 opacity-20">
             <div class="absolute top-0 left-0 w-48 h-48 bg-red-600 rounded-full filter blur-[80px]"></div>
@@ -61,6 +75,7 @@
             </h2>
         </div>
     </div>
+
     <div class="sticky top-[60px] z-40 bg-[#0f0f0f] border-b border-white/5">
         <div class="max-w-7xl mx-auto px-4 py-4 overflow-x-auto hide-scrollbar">
             <div class="flex gap-3 whitespace-nowrap" id="tabs-container">
@@ -78,9 +93,12 @@
             </div>
         </div>
     </div>
+
     <div id="menu-section" class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="menu-grid"></div>
     </div>
+
+    <!-- MODAL DEL CARRITO -->
     <div id="cart-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-end sm:items-center justify-center">
         <div class="bg-zinc-900 w-full sm:max-w-lg h-[90vh] sm:h-auto sm:rounded-3xl overflow-hidden flex flex-col border-t sm:border border-gray-800 shadow-2xl">
             <div class="bg-red-600 text-white px-6 py-4 flex items-center justify-between">
@@ -91,6 +109,16 @@
                 <button onclick="toggleCart()" class="text-3xl p-2">&times;</button>
             </div>
             <div id="cart-items" class="flex-1 p-6 overflow-y-auto space-y-4"></div>
+
+            <!-- SECCIÓN DE SALSAS - MÁXIMO 3 DE CADA UNA -->
+            <div class="p-6 border-t border-gray-700 bg-black/60">
+                <h4 class="font-bold text-yellow-500 mb-4 flex items-center gap-2">
+                    <i class="fas fa-drumstick-bite"></i>
+                    ¿Qué salsas quieres? (máximo 3 de cada una)
+                </h4>
+                <div id="salsas-container" class="space-y-4"></div>
+            </div>
+
             <div class="p-6 border-t border-gray-800 bg-black/60">
                 <div class="flex justify-between items-center mb-6">
                     <span class="text-gray-400 font-bold uppercase text-xs tracking-widest">Total</span>
@@ -102,6 +130,7 @@
             </div>
         </div>
     </div>
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBOlbYHJdAb1tcEHW-_vT2b8-CnZdYTdtI",
@@ -115,11 +144,85 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const telefonoWhatsApp = "573203707804";
+
         let ubicacionUsuario = "No compartida";
         let productos = [];
         let carrito = [];
+        let deferredPrompt = null;
 
-        // FUNCIÓN PARA OBTENER EL GPS
+        // Salsas - Máximo 3 de cada una
+        let salsasSeleccionadas = {
+            rosada: 0,
+            roja: 0,
+            mayonesa: 0,
+            picante: 0
+        };
+
+        const salsasNombres = {
+            rosada: "Salsa Rosada",
+            roja: "Salsa Roja",
+            mayonesa: "Mayonesa",
+            picante: "Picante"
+        };
+
+        // ==================== FUNCIONES DE SALSAS ====================
+        function renderSalsas() {
+            const container = document.getElementById('salsas-container');
+            let html = '';
+
+            Object.keys(salsasNombres).forEach(key => {
+                const cantidad = salsasSeleccionadas[key];
+                html += `
+                    <div class="flex items-center justify-between bg-zinc-800 p-4 rounded-2xl">
+                        <span class="font-medium">${salsasNombres[key]}</span>
+                        <div class="flex items-center gap-4">
+                            <button onclick="cambiarSalsa('${key}', -1)" 
+                                    class="w-8 h-8 bg-zinc-700 hover:bg-red-600 rounded-xl flex items-center justify-center text-xl font-bold">-</button>
+                            <span class="font-bold text-xl w-8 text-center">${cantidad}</span>
+                            <button onclick="cambiarSalsa('${key}', 1)" 
+                                    class="w-8 h-8 bg-zinc-700 hover:bg-green-600 rounded-xl flex items-center justify-center text-xl font-bold">+</button>
+                        </div>
+                    </div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function cambiarSalsa(tipo, delta) {
+            const nuevaCantidad = salsasSeleccionadas[tipo] + delta;
+
+            if (nuevaCantidad < 0) return;
+            if (nuevaCantidad > 3) {
+                alert("⚠️ Solo puedes pedir máximo 3 unidades de cada salsa");
+                return;
+            }
+
+            salsasSeleccionadas[tipo] = nuevaCantidad;
+            renderSalsas();
+        }
+
+        // ==================== INSTALACIÓN APP ====================
+        async function triggerInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                if (outcome === 'accepted') alert('¡Gracias! Monster Burger se está instalando 🎉');
+            } else {
+                alert("📱 Para instalar la app:\n\n1. Toca los ⋮ (tres puntos) en la esquina superior derecha\n2. Selecciona 'Agregar a pantalla de inicio' o 'Instalar app'");
+            }
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        window.addEventListener('appinstalled', () => {
+            alert('¡Monster Burger ya está instalada en tu pantalla de inicio! 🎉');
+        });
+
+        // ==================== TUS FUNCIONES ORIGINALES ====================
         function obtenerUbicacion() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -127,10 +230,8 @@
                         const lat = pos.coords.latitude;
                         const lon = pos.coords.longitude;
                         ubicacionUsuario = `https://www.google.com/maps?q=${lat},${lon}`;
-                        console.log("Ubicación obtenida");
                     },
                     (err) => {
-                        console.warn("Ubicación denegada");
                         ubicacionUsuario = "El cliente denegó el acceso a la ubicación.";
                     }
                 );
@@ -140,7 +241,7 @@
         function renderMenu(categoria = 'all') {
             const grid = document.getElementById('menu-grid');
             const filtrados = categoria === 'all' ? productos : productos.filter(p => p.categoria === categoria);
-           
+          
             grid.innerHTML = filtrados.map(p => `
                 <div class="card-monster rounded-2xl overflow-hidden shadow-lg">
                     <img src="${p.img}" class="w-full h-48 object-cover" onerror="this.src='logo.jpg'">
@@ -220,9 +321,11 @@
             const modal = document.getElementById('cart-modal');
             modal.classList.toggle('hidden');
             document.body.style.overflow = modal.classList.contains('hidden') ? 'auto' : 'hidden';
+           
             if (!modal.classList.contains('hidden')) {
                 renderCarrito();
                 obtenerUbicacion();
+                renderSalsas(); 
             }
         }
 
@@ -230,9 +333,22 @@
             if (carrito.length === 0) return;
             let msg = `👹 *PEDIDO MONSTER BURGER*\n\n`;
             carrito.forEach(i => msg += `✅ *${i.cantidad}x* ${i.nombre}\n`);
+
+            // Agregar salsas
+            let salsasTexto = '';
+            Object.keys(salsasSeleccionadas).forEach(key => {
+                if (salsasSeleccionadas[key] > 0) {
+                    salsasTexto += `${salsasSeleccionadas[key]}x ${salsasNombres[key]}\n`;
+                }
+            });
+
+            if (salsasTexto) {
+                msg += `\n🥫 *SALSAS:*\n${salsasTexto}`;
+            }
+
             msg += `\n💰 *TOTAL: ${document.getElementById('cart-total').innerText}*`;
             msg += `\n\n📍 *UBICACIÓN:* ${ubicacionUsuario}`;
-           
+
             window.open(`https://wa.me/${telefonoWhatsApp}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
@@ -272,6 +388,15 @@
                 grid.innerHTML = '<p class="col-span-full text-center py-10 text-red-600 font-bold">ERROR DE CONEXIÓN.</p>';
                 renderMenu('all');
             }
+        }
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(() => console.log('Service Worker registrado'))
+                    .catch(err => console.log('Error Service Worker:', err));
+            });
         }
 
         window.onload = () => {
