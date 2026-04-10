@@ -72,7 +72,7 @@
         </div>
     </div>
 
-    <!-- Tabs (sin Todo ni Bebidas) -->
+    <!-- Tabs -->
     <div class="sticky top-[60px] z-40 bg-[#0f0f0f] border-b border-white/5">
         <div class="max-w-7xl mx-auto px-4 py-4 overflow-x-auto hide-scrollbar">
             <div class="flex gap-3 whitespace-nowrap" id="tabs-container">
@@ -162,10 +162,11 @@
         const db = firebase.firestore();
         const telefonoWhatsApp = "573203707804";
 
-        let ubicacionUsuario = "Obteniendo ubicación...";   // ← Cambiado
+        let ubicacionUsuario = "Obteniendo ubicación...";
         let productos = [];
         let carrito = [];
-        
+        let deferredPrompt = null;   // ← Necesario para la instalación
+
         // Salsas
         let salsasSeleccionadas = { rosada: 0, roja: 0, mayonesa: 0, picante: 0 };
         const salsasNombres = { rosada: "Salsa Rosada", roja: "Salsa Roja", mayonesa: "Mayonesa", picante: "Picante" };
@@ -176,6 +177,30 @@
 
         let salsasAbiertas = false;
         let bebidasAbiertas = false;
+
+        // ==================== INSTALACIÓN DE LA APP ====================
+        async function triggerInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                if (outcome === 'accepted') {
+                    alert('¡Gracias! Monster Burger se está instalando 🎉');
+                }
+            } else {
+                alert("📱 Para instalar la app:\n\n1. Toca los ⋮ (tres puntos) en la esquina superior derecha\n2. Selecciona 'Agregar a pantalla de inicio' o 'Instalar app'");
+            }
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log("✅ Evento beforeinstallprompt capturado");
+        });
+
+        window.addEventListener('appinstalled', () => {
+            alert('¡Monster Burger ya está instalada en tu pantalla de inicio! 🎉');
+        });
 
         // ==================== SOLICITAR UBICACIÓN AL ENTRAR ====================
         function solicitarUbicacionInicial() {
@@ -472,7 +497,7 @@
             cargarConfiguracionVisual();
             cargarProductosDesdeFirebase();
             cargarBebidas();
-            solicitarUbicacionInicial();     // ← Nueva función: pide ubicación al entrar
+            solicitarUbicacionInicial();
         };
     </script>
 </body>
