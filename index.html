@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Monster Burger | Domicilios</title>
   
-    <!-- PWA Config -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f9d423">
     <link id="dynamic-favicon" rel="icon" type="image/jpeg" href="logo.jpg">
@@ -33,9 +32,6 @@
         .tab-inactive { background-color: #1a1a1a; color: #a1a1aa; border: 1px solid #262626; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        @media (max-width: 640px) {
-            .text-monster-hero { font-size: 2.5rem !important; line-height: 1; }
-        }
     </style>
 </head>
 <body>
@@ -50,8 +46,7 @@
             </div>
            
             <div class="flex items-center gap-3">
-                <button onclick="triggerInstall()"
-                        class="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-black px-5 py-3 rounded-2xl font-bold text-sm active:scale-95 transition-all shadow-lg">
+                <button onclick="triggerInstall()" class="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-black px-5 py-3 rounded-2xl font-bold text-sm active:scale-95 transition-all shadow-lg">
                     <i class="fas fa-download"></i>
                     <span class="hidden sm:inline">Instalar App</span>
                 </button>
@@ -64,6 +59,7 @@
         </div>
     </nav>
 
+    <!-- Hero -->
     <div class="relative py-12 sm:py-20 overflow-hidden bg-black flex items-center justify-center border-b border-white/5">
         <div class="absolute inset-0 opacity-20">
             <div class="absolute top-0 left-0 w-48 h-48 bg-red-600 rounded-full filter blur-[80px]"></div>
@@ -76,11 +72,11 @@
         </div>
     </div>
 
+    <!-- Tabs (sin Todo ni Bebidas) -->
     <div class="sticky top-[60px] z-40 bg-[#0f0f0f] border-b border-white/5">
         <div class="max-w-7xl mx-auto px-4 py-4 overflow-x-auto hide-scrollbar">
             <div class="flex gap-3 whitespace-nowrap" id="tabs-container">
-                <button onclick="filtrarCategoria('all')" class="tab-active px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Todo</button>
-                <button onclick="filtrarCategoria('hamburguesas')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Hamburguesas</button>
+                <button onclick="filtrarCategoria('hamburguesas')" class="tab-active px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Hamburguesas</button>
                 <button onclick="filtrarCategoria('perros')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Perros Calientes</button>
                 <button onclick="filtrarCategoria('salchipapas')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Salchipapas</button>
                 <button onclick="filtrarCategoria('especiales')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Especiales</button>
@@ -89,7 +85,6 @@
                 <button onclick="filtrarCategoria('patacon')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Patacón</button>
                 <button onclick="filtrarCategoria('adiciones')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Adiciones</button>
                 <button onclick="filtrarCategoria('entradas')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Entradas</button>
-                <button onclick="filtrarCategoria('bebidas')" class="tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase">Bebidas</button>
             </div>
         </div>
     </div>
@@ -108,15 +103,37 @@
                 </div>
                 <button onclick="toggleCart()" class="text-3xl p-2">&times;</button>
             </div>
+
             <div id="cart-items" class="flex-1 p-6 overflow-y-auto space-y-4"></div>
 
-            <!-- SECCIÓN DE SALSAS - MÁXIMO 3 DE CADA UNA -->
-            <div class="p-6 border-t border-gray-700 bg-black/60">                 <!-- REPARAR LA SECCION DE SALSAS Y AÑADAR LAS GASEOSAS JUNTO CON LA MODIFICACION DE PRECIOS EN LA FACTURA -->
-                <h4 class="font-bold text-yellow-500 mb-4 flex items-center gap-2">
-                    <i class="fas fa-drumstick-bite"></i>
-                    ¿Qué salsas quieres? (máximo 3 de cada una)
-                </h4>
-                <div id="salsas-container" class="space-y-4"></div>
+            <!-- SALSAS -->
+            <div class="border-t border-gray-700 bg-black/60">
+                <button onclick="toggleSalsas()" class="w-full px-6 py-5 flex items-center justify-between hover:bg-zinc-800 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-drumstick-bite text-yellow-500"></i>
+                        <span class="font-bold text-lg">Salsas</span>
+                    </div>
+                    <i id="salsas-icon" class="fas fa-chevron-down text-xl transition-transform"></i>
+                </button>
+                <div id="salsas-content" class="hidden px-6 pb-6">
+                    <p class="text-gray-400 text-sm mb-4">Máximo 3 de cada salsa</p>
+                    <div id="salsas-container" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- BEBIDAS -->
+            <div class="border-t border-gray-700 bg-black/60">
+                <button onclick="toggleBebidas()" class="w-full px-6 py-5 flex items-center justify-between hover:bg-zinc-800 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-glass-water text-yellow-500"></i>
+                        <span class="font-bold text-lg">Bebidas</span>
+                    </div>
+                    <i id="bebidas-icon" class="fas fa-chevron-down text-xl transition-transform"></i>
+                </button>
+                <div id="bebidas-content" class="hidden px-6 pb-6">
+                    <p class="text-gray-400 text-sm mb-4">Elige tus bebidas</p>
+                    <div id="bebidas-container" class="space-y-4"></div>
+                </div>
             </div>
 
             <div class="p-6 border-t border-gray-800 bg-black/60">
@@ -129,7 +146,7 @@
                 </button>
             </div>
         </div>
-    </div> 
+    </div>
 
     <script>
         const firebaseConfig = {
@@ -145,102 +162,201 @@
         const db = firebase.firestore();
         const telefonoWhatsApp = "573203707804";
 
-        let ubicacionUsuario = "No compartida";
+        let ubicacionUsuario = "Obteniendo ubicación...";   // ← Cambiado
         let productos = [];
         let carrito = [];
-        let deferredPrompt = null;
+        
+        // Salsas
+        let salsasSeleccionadas = { rosada: 0, roja: 0, mayonesa: 0, picante: 0 };
+        const salsasNombres = { rosada: "Salsa Rosada", roja: "Salsa Roja", mayonesa: "Mayonesa", picante: "Picante" };
 
-        // Salsas - Máximo 3 de cada una
-        let salsasSeleccionadas = {
-            rosada: 0,
-            roja: 0,
-            mayonesa: 0,
-            picante: 0
-        };
+        // Bebidas
+        let bebidasData = [];
+        let bebidasSeleccionadas = {};
 
-        const salsasNombres = {
-            rosada: "Salsa Rosada",
-            roja: "Salsa Roja",
-            mayonesa: "Mayonesa",
-            picante: "Picante"
-        };
+        let salsasAbiertas = false;
+        let bebidasAbiertas = false;
 
-        // ==================== FUNCIONES DE SALSAS ====================
-        function renderSalsas() {
-            const container = document.getElementById('salsas-container');
-            let html = '';
-
-            Object.keys(salsasNombres).forEach(key => {
-                const cantidad = salsasSeleccionadas[key];
-                html += `
-                    <div class="flex items-center justify-between bg-zinc-800 p-4 rounded-2xl">
-                        <span class="font-medium">${salsasNombres[key]}</span>
-                        <div class="flex items-center gap-4">
-                            <button onclick="cambiarSalsa('${key}', -1)" 
-                                    class="w-8 h-8 bg-zinc-700 hover:bg-red-600 rounded-xl flex items-center justify-center text-xl font-bold">-</button>
-                            <span class="font-bold text-xl w-8 text-center">${cantidad}</span>
-                            <button onclick="cambiarSalsa('${key}', 1)" 
-                                    class="w-8 h-8 bg-zinc-700 hover:bg-green-600 rounded-xl flex items-center justify-center text-xl font-bold">+</button>
-                        </div>
-                    </div>`;
-            });
-
-            container.innerHTML = html;
-        }
-
-        function cambiarSalsa(tipo, delta) {
-            const nuevaCantidad = salsasSeleccionadas[tipo] + delta;
-
-            if (nuevaCantidad < 0) return;
-            if (nuevaCantidad > 3) {
-                alert("⚠️ Solo puedes pedir máximo 3 unidades de cada salsa");
-                return;
-            }
-
-            salsasSeleccionadas[tipo] = nuevaCantidad;
-            renderSalsas();
-        }
-
-        // ==================== INSTALACIÓN APP ====================
-        async function triggerInstall() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                if (outcome === 'accepted') alert('¡Gracias! Monster Burger se está instalando 🎉');
-            } else {
-                alert("📱 Para instalar la app:\n\n1. Toca los ⋮ (tres puntos) en la esquina superior derecha\n2. Selecciona 'Agregar a pantalla de inicio' o 'Instalar app'");
-            }
-        }
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-        });
-
-        window.addEventListener('appinstalled', () => {
-            alert('¡Monster Burger ya está instalada en tu pantalla de inicio! 🎉');
-        });
-
-        // ==================== TUS FUNCIONES ORIGINALES ====================
-        function obtenerUbicacion() {
+        // ==================== SOLICITAR UBICACIÓN AL ENTRAR ====================
+        function solicitarUbicacionInicial() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
                         const lat = pos.coords.latitude;
                         const lon = pos.coords.longitude;
                         ubicacionUsuario = `https://www.google.com/maps?q=${lat},${lon}`;
+                        console.log("✅ Ubicación cargada correctamente al inicio");
                     },
-                    (err) => {
-                        ubicacionUsuario = "El cliente denegó el acceso a la ubicación.";
+                    (error) => {
+                        console.warn("⚠️ Usuario denegó la ubicación o error:", error);
+                        ubicacionUsuario = "Ubicación no compartida (por favor activa GPS)";
                     }
                 );
+            } else {
+                ubicacionUsuario = "Tu navegador no soporta geolocalización";
             }
         }
 
-        function renderMenu(categoria = 'all') {
+        // ==================== CARGAR BEBIDAS ====================
+        async function cargarBebidas() {
+            try {
+                const snapshot = await db.collection('bebidas').get();
+                bebidasData = [];
+                bebidasSeleccionadas = {};
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const bebidaId = doc.id;
+                    bebidasData.push({
+                        id: bebidaId,
+                        nombre: data.nombre || "Bebida",
+                        precio: data.precio || 0
+                    });
+                    bebidasSeleccionadas[bebidaId] = 0;
+                });
+            } catch (error) {
+                console.error("Error cargando bebidas:", error);
+            }
+        }
+
+        // ==================== SALSAS ====================
+        function toggleSalsas() {
+            salsasAbiertas = !salsasAbiertas;
+            document.getElementById('salsas-content').classList.toggle('hidden');
+            document.getElementById('salsas-icon').classList.toggle('rotate-180');
+            if (salsasAbiertas) renderSalsas();
+        }
+
+        function renderSalsas() {
+            const container = document.getElementById('salsas-container');
+            let html = '';
+            Object.keys(salsasNombres).forEach(key => {
+                const cantidad = salsasSeleccionadas[key];
+                html += `
+                    <div class="flex items-center justify-between bg-zinc-800 p-4 rounded-2xl">
+                        <span class="font-medium">${salsasNombres[key]}</span>
+                        <div class="flex items-center gap-4">
+                            <button onclick="cambiarSalsa('${key}', -1)" class="w-8 h-8 bg-zinc-700 hover:bg-red-600 rounded-xl flex items-center justify-center text-xl font-bold">-</button>
+                            <span class="font-bold text-xl w-8 text-center">${cantidad}</span>
+                            <button onclick="cambiarSalsa('${key}', 1)" class="w-8 h-8 bg-zinc-700 hover:bg-green-600 rounded-xl flex items-center justify-center text-xl font-bold">+</button>
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function cambiarSalsa(tipo, delta) {
+            const nueva = salsasSeleccionadas[tipo] + delta;
+            if (nueva < 0 || nueva > 3) return;
+            salsasSeleccionadas[tipo] = nueva;
+            renderSalsas();
+            actualizarUI();
+        }
+
+        // ==================== BEBIDAS ====================
+        function toggleBebidas() {
+            bebidasAbiertas = !bebidasAbiertas;
+            document.getElementById('bebidas-content').classList.toggle('hidden');
+            document.getElementById('bebidas-icon').classList.toggle('rotate-180');
+            if (bebidasAbiertas) renderBebidas();
+        }
+
+        function renderBebidas() {
+            const container = document.getElementById('bebidas-container');
+            let html = '';
+            bebidasData.forEach(bebida => {
+                const cantidad = bebidasSeleccionadas[bebida.id] || 0;
+                html += `
+                    <div class="flex items-center justify-between bg-zinc-800 p-4 rounded-2xl">
+                        <span class="font-medium">${bebida.nombre}</span>
+                        <div class="flex items-center gap-4">
+                            <button onclick="cambiarBebida('${bebida.id}', -1)" class="w-8 h-8 bg-zinc-700 hover:bg-red-600 rounded-xl flex items-center justify-center text-xl font-bold">-</button>
+                            <span class="font-bold text-xl w-8 text-center">${cantidad}</span>
+                            <button onclick="cambiarBebida('${bebida.id}', 1)" class="w-8 h-8 bg-zinc-700 hover:bg-green-600 rounded-xl flex items-center justify-center text-xl font-bold">+</button>
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = html || '<p class="text-gray-500 text-center py-4">No hay bebidas disponibles</p>';
+        }
+
+        function cambiarBebida(id, delta) {
+            const nueva = (bebidasSeleccionadas[id] || 0) + delta;
+            if (nueva < 0) return;
+            if (nueva > 5) {
+                alert("⚠️ Solo puedes pedir máximo 5 de cada bebida");
+                return;
+            }
+            bebidasSeleccionadas[id] = nueva;
+            renderBebidas();
+            actualizarUI();
+        }
+
+        // ==================== CALCULAR TOTAL ====================
+        function calcularTotal() {
+            let total = 0;
+            carrito.forEach(item => total += (item.precio || 0) * item.cantidad);
+
+            bebidasData.forEach(bebida => {
+                total += (bebida.precio || 0) * (bebidasSeleccionadas[bebida.id] || 0);
+            });
+
+            const totalSalsas = Object.values(salsasSeleccionadas).reduce((a, b) => a + b, 0);
+            total += Math.floor(totalSalsas / 2) * 1000;
+
+            return total;
+        }
+
+        function actualizarUI() {
+            document.getElementById('cart-count').textContent = carrito.reduce((s, i) => s + i.cantidad, 0);
+            renderCarrito();
+            document.getElementById('cart-total').textContent = '$' + calcularTotal().toLocaleString();
+        }
+
+        function enviarOrdenWhatsApp() {
+            if (carrito.length === 0) return;
+
+            let msg = `👹 *PEDIDO MONSTER BURGER*\n\n`;
+            carrito.forEach(i => msg += `✅ *${i.cantidad}x* ${i.nombre}\n`);
+
+            let salsasTexto = '';
+            Object.keys(salsasSeleccionadas).forEach(key => {
+                if (salsasSeleccionadas[key] > 0) salsasTexto += `${salsasSeleccionadas[key]}x ${salsasNombres[key]}\n`;
+            });
+            if (salsasTexto) msg += `\n🥫 *SALSAS:*\n${salsasTexto}`;
+
+            let bebidasTexto = '';
+            bebidasData.forEach(bebida => {
+                const cant = bebidasSeleccionadas[bebida.id] || 0;
+                if (cant > 0) {
+                    const subtotal = bebida.precio * cant;
+                    bebidasTexto += `${cant}x ${bebida.nombre} ($${subtotal.toLocaleString()})\n`;
+                }
+            });
+            if (bebidasTexto) msg += `\n🥤 *BEBIDAS:*\n${bebidasTexto}`;
+
+            const totalSalsas = Object.values(salsasSeleccionadas).reduce((a, b) => a + b, 0);
+            const cargoSalsas = Math.floor(totalSalsas / 2) * 1000;
+            if (cargoSalsas > 0) msg += `\n🍅 *CARGO EXTRA POR SALSAS:* $${cargoSalsas.toLocaleString()}\n`;
+
+            msg += `\n💰 *TOTAL FINAL: $${calcularTotal().toLocaleString()}*`;
+            msg += `\n\n📍 *UBICACIÓN:* ${ubicacionUsuario}`;
+
+            window.open(`https://wa.me/${telefonoWhatsApp}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            modal.classList.toggle('hidden');
+            document.body.style.overflow = modal.classList.contains('hidden') ? 'auto' : 'hidden';
+            if (!modal.classList.contains('hidden')) {
+                renderCarrito();
+            }
+        }
+
+        // ==================== Tus funciones restantes ====================
+        function renderMenu(categoria = 'hamburguesas') {
             const grid = document.getElementById('menu-grid');
-            const filtrados = categoria === 'all' ? productos : productos.filter(p => p.categoria === categoria);
+            const filtrados = productos.filter(p => p.categoria === categoria);
           
             grid.innerHTML = filtrados.map(p => `
                 <div class="card-monster rounded-2xl overflow-hidden shadow-lg">
@@ -255,17 +371,18 @@
                     </div>
                 </div>
             `).join('');
-            if(filtrados.length === 0) {
-                grid.innerHTML = '<p class="col-span-full text-center py-10 text-gray-500 italic">Próximamente más platos aquí...</p>';
+
+            if (filtrados.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center py-10 text-gray-500 italic">No hay productos en esta categoría aún...</p>';
             }
         }
 
         function filtrarCategoria(cat) {
             const botones = document.querySelectorAll('#tabs-container button');
             botones.forEach(btn => {
-                btn.className = btn.getAttribute('onclick').includes(`'${cat}'`) ?
-                    "tab-active px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase transition-all" :
-                    "tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase transition-all";
+                btn.className = btn.getAttribute('onclick').includes(`'${cat}'`) 
+                    ? "tab-active px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase transition-all" 
+                    : "tab-inactive px-6 py-3 rounded-2xl font-bold shadow text-sm uppercase transition-all";
             });
             renderMenu(cat);
         }
@@ -279,77 +396,32 @@
             mostrarNotificacion(`¡${prod.nombre} añadida!`);
         }
 
-        function actualizarUI() {
-            document.getElementById('cart-count').textContent = carrito.reduce((s, i) => s + i.cantidad, 0);
-            renderCarrito();
-        }
-
         function renderCarrito() {
             const container = document.getElementById('cart-items');
             if (carrito.length === 0) {
                 container.innerHTML = `<div class="text-center py-10"><p class="text-gray-500">Carrito vacío</p></div>`;
-                document.getElementById('cart-total').textContent = '$0';
                 return;
             }
-            let total = 0;
-            container.innerHTML = carrito.map((item, index) => {
-                total += item.precio * item.cantidad;
-                return `
-                    <div class="flex items-center gap-4 bg-white/5 p-3 rounded-2xl border border-white/5">
-                        <img src="${item.img}" class="w-16 h-16 object-cover rounded-xl" onerror="this.src='logo.jpg'">
-                        <div class="flex-1">
-                            <h4 class="font-bold text-sm uppercase">${item.nombre}</h4>
-                            <p class="text-yellow-500 font-bold">$${item.precio.toLocaleString()}</p>
-                            <div class="flex items-center gap-4 mt-2">
-                                <button onclick="cambiarCantidad(${index}, -1)" class="text-red-500"><i class="fas fa-minus-circle"></i></button>
-                                <span class="font-bold">${item.cantidad}</span>
-                                <button onclick="cambiarCantidad(${index}, 1)" class="text-green-500"><i class="fas fa-plus-circle"></i></button>
-                            </div>
+            container.innerHTML = carrito.map((item, index) => `
+                <div class="flex items-center gap-4 bg-white/5 p-3 rounded-2xl border border-white/5">
+                    <img src="${item.img}" class="w-16 h-16 object-cover rounded-xl" onerror="this.src='logo.jpg'">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-sm uppercase">${item.nombre}</h4>
+                        <p class="text-yellow-500 font-bold">$${item.precio.toLocaleString()}</p>
+                        <div class="flex items-center gap-4 mt-2">
+                            <button onclick="cambiarCantidad(${index}, -1)" class="text-red-500"><i class="fas fa-minus-circle"></i></button>
+                            <span class="font-bold">${item.cantidad}</span>
+                            <button onclick="cambiarCantidad(${index}, 1)" class="text-green-500"><i class="fas fa-plus-circle"></i></button>
                         </div>
-                    </div>`;
-            }).join('');
-            document.getElementById('cart-total').textContent = `$${total.toLocaleString()}`;
+                    </div>
+                </div>
+            `).join('');
         }
 
         function cambiarCantidad(i, c) {
             carrito[i].cantidad += c;
             if (carrito[i].cantidad < 1) carrito.splice(i, 1);
             actualizarUI();
-        }
-
-        function toggleCart() {
-            const modal = document.getElementById('cart-modal');
-            modal.classList.toggle('hidden');
-            document.body.style.overflow = modal.classList.contains('hidden') ? 'auto' : 'hidden';
-           
-            if (!modal.classList.contains('hidden')) {
-                renderCarrito();
-                obtenerUbicacion();
-                renderSalsas(); 
-            }
-        }
-
-        function enviarOrdenWhatsApp() {
-            if (carrito.length === 0) return;
-            let msg = `👹 *PEDIDO MONSTER BURGER*\n\n`;
-            carrito.forEach(i => msg += `✅ *${i.cantidad}x* ${i.nombre}\n`);
-
-            // Agregar salsas
-            let salsasTexto = '';
-            Object.keys(salsasSeleccionadas).forEach(key => {
-                if (salsasSeleccionadas[key] > 0) {
-                    salsasTexto += `${salsasSeleccionadas[key]}x ${salsasNombres[key]}\n`;
-                }
-            });
-
-            if (salsasTexto) {
-                msg += `\n🥫 *SALSAS:*\n${salsasTexto}`;
-            }
-
-            msg += `\n💰 *TOTAL: ${document.getElementById('cart-total').innerText}*`;
-            msg += `\n\n📍 *UBICACIÓN:* ${ubicacionUsuario}`;
-
-            window.open(`https://wa.me/${telefonoWhatsApp}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         function mostrarNotificacion(t) {
@@ -378,15 +450,11 @@
             grid.innerHTML = '<p class="col-span-full text-center py-10 text-yellow-500 animate-pulse font-black italic">CAZANDO COMIDA EN LA NUBE...</p>';
             try {
                 const snapshot = await db.collection('productos').get();
-                const productosFirebase = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if (productosFirebase.length > 0) {
-                    productos = productosFirebase;
-                }
-                renderMenu('all');
+                productos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderMenu('hamburguesas');
             } catch (error) {
                 console.error("Error al traer productos:", error);
                 grid.innerHTML = '<p class="col-span-full text-center py-10 text-red-600 font-bold">ERROR DE CONEXIÓN.</p>';
-                renderMenu('all');
             }
         }
 
@@ -399,9 +467,12 @@
             });
         }
 
+        // ==================== INICIO DE LA APP ====================
         window.onload = () => {
             cargarConfiguracionVisual();
             cargarProductosDesdeFirebase();
+            cargarBebidas();
+            solicitarUbicacionInicial();     // ← Nueva función: pide ubicación al entrar
         };
     </script>
 </body>
